@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+ <style>
+   body {
+      background-color: #ccc;
+   }
+   .chat-box{
+
+   }
+   .chat-item{
+     
+   }
+   .chat-item img{
+     width: 30px;
+     height: 30px;
+     border-radius: 50%;
+     border: 1px solid red;
+   }
+   .port{
+    line-height: 5px;
+    margin-left: 10px;
+    background-color: #e9e9e9;
+    padding: 5px 10px 10px 10px;
+    border-radius: 10px;
+   }
+   .port.user{
+    background-color: #1abc9c;
+   
+   }
+   .port h4{
+    font-weight: 600;
+   }
+
+   .chat-box .chat-item:last-child {
+      animation: msg .3s;
+      animation-iteration-count: 1;
+   }
+
+   @keyframes msg {
+      0%{
+         transform: translate(0, 40px);
+         opacity: 0;
+      }
+      100% {
+         transform: translate(0, 0);
+         opacity: 1;
+      }
+   }
+ </style>
+<body>
+
+
+   <audio src="./sound.mp3" id="music"></audio>
+
+   <div class="container my-5">
+      <div class="row justify-content-center">
+         <div class="col-md-6">
+            <div class="card shadow">
+               <div class="card-body">
+                  <div class="chat-box " id="chat">
+                     
+                  </div>
+               </div>
+               <div class="card-footer">
+                  <div class="input-group">
+                     <input id="name" type="text" placeholder="name" class="w-25">
+                     <input id="photo" type="text" placeholder="photo" class="w-25 mx-2">
+                     <input id="message" type="text" placeholder="message" class="50">
+                     <button class="btn btn-primary w-100 my-3" id="send">Send</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+
+
+
+
+    
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+     const socket = io()
+     let name = localStorage.getItem('chat-name')
+
+  socket.on('latestChat', (data) => {
+    
+    let chat = ''
+    data.forEach( item => {
+
+     
+      if(name === item.name){
+         chat += `
+         <div class="chat-item d-flex gap-3 mb-3 justify-content-end me-1">
+            
+            <div class="port user mr-2">
+               <h5>${item.name}</h5>
+               <p>${item.message}</p>
+            </div>
+            <img src="${item.photo}" alt="">
+         </div>
+      
+      `
+      }else{
+         document.getElementById('music').play();
+         chat += `
+         <div class="chat-item d-flex mb-3 ml-1">
+            <img src="${item.photo}" alt="">
+            <div class="port">
+               <h5>${item.name}</h5>
+               <p>${item.message}</p>
+            </div>
+            
+         </div>
+      
+      `
+      }
+      
+    })
+
+    document.getElementById('chat').innerHTML = chat;
+     
+  })
+
+  document.getElementById('send').onclick = () => {
+    const name = document.getElementById('name').value;
+    const photo = document.getElementById('photo').value;
+    const message = document.getElementById('message').value;
+
+
+    if(!localStorage.getItem('chat-name', name)){
+      localStorage.setItem('chat-name', name)
+    }
+    // send data to socket
+    socket.emit('chat', {name, photo, message});
+    //clear msg field
+    document.getElementById('message').value = '';
+  }
+
+ 
+   
+  </script>
+</body>
+</html>
